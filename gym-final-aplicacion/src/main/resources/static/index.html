@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GymSystem</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:       #0d0d0d;
+    --surface:  #161616;
+    --card:     #1e1e1e;
+    --border:   #2a2a2a;
+    --accent:   #e8ff00;
+    --accent2:  #ff4d00;
+    --text:     #f0f0f0;
+    --muted:    #666;
+    --danger:   #ff3b3b;
+    --success:  #00e676;
+    --radius:   10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    line-height: 1;
+  }
+  .logo span { color: var(--accent2); }
+  .nav { margin-top: 20px; flex: 1; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 500;
+    transition: all .15s;
+    border-left: 3px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,255,0,.04); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-section {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 20px 24px 6px;
+  }
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+    flex: 1;
+  }
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    width: 280px;
+    transition: border-color .2s;
+  }
+  .search-wrap:focus-within { border-color: var(--accent); }
+  .search-wrap input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+  }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon { color: var(--muted); font-size: 14px; }
+  .btn-new {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity .15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-new:hover { opacity: .85; }
+
+  /* ── CONTENT ── */
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .stat-label { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--accent); line-height: 1.1; margin-top: 4px; }
+  .stat-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+  /* ── TABLE CARD ── */
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .table-title { font-weight: 600; font-size: 14px; }
+  .table-count { color: var(--muted); font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    font-weight: 500;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  tbody td { padding: 13px 16px; font-size: 13px; color: var(--text); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-efectivo      { background: rgba(0,230,118,.15);  color: var(--success); }
+  .badge-tarjeta       { background: rgba(232,255,0,.12);  color: var(--accent);  }
+  .badge-transferencia { background: rgba(255,77,0,.15);   color: var(--accent2); }
+  .badge-activo        { background: rgba(0,230,118,.15);  color: var(--success); }
+  .badge-inactivo      { background: rgba(255,59,59,.15);  color: var(--danger);  }
+  .badge-vacaciones    { background: rgba(232,255,0,.12);  color: var(--accent);  }
+
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all .15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .actions-cell { display: flex; gap: 6px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 480px;
+    max-width: 95vw;
+    box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .modal-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color .15s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ── FORM FIELDS ── */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .5px; }
+  .field input, .field select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--card); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── BUTTONS ── */
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    transition: all .15s;
+  }
+  .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+  .btn-save {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 22px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: opacity .15s;
+  }
+  .btn-save:hover { opacity: .85; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 13px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all .3s ease;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.ok  { border-left: 3px solid var(--success); }
+  .toast.err { border-left: 3px solid var(--danger); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 13px; }
+
+  /* ── LOADING ── */
+  .loading-row td {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+
+  /* ── CONFIRM ── */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 110;
+    align-items: center;
+    justify-content: center;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 360px;
+    padding: 28px 24px;
+    text-align: center;
+    animation: slideUp .2s ease;
+  }
+  .confirm-icon { font-size: 36px; margin-bottom: 12px; }
+  .confirm-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .confirm-msg { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+  .btn-confirm-del {
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 22px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* responsive table scroll */
+  .table-scroll { overflow-x: auto; }
+
+  /* page sections */
+  .page { display: none; }
+  .page.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div class="logo">GYM<span>SYS</span></div>
+  <nav class="nav">
+    <div class="nav-section">General</div>
+    <div class="nav-item active" onclick="navigate('pagos', this)">
+      <span class="nav-icon">💳</span> Pagos
+    </div>
+    <div class="nav-item" onclick="navigate('asistencias', this)">
+      <span class="nav-icon">📋</span> Asistencias
+    </div>
+    <div class="nav-item" onclick="navigate('clientes', this)">
+      <span class="nav-icon">👥</span> Clientes
+    </div>
+    <div class="nav-item" onclick="navigate('entrenadores', this)">
+      <span class="nav-icon">🏋️</span> Entrenadores
+    </div>
+    <div class="nav-item" onclick="navigate('asignaciones', this)">
+      <span class="nav-icon">🔗</span> Asignaciones
+    </div>
+    <div class="nav-item" onclick="navigate('membresias', this)">
+      <span class="nav-icon">💎</span> Membresías
+    </div>
+    <div class="nav-section">Rutinas BCNF</div>
+    <div class="nav-item" onclick="navigate('rutinas', this)">
+      <span class="nav-icon">🏋️</span> Rutinas
+    </div>
+    <div class="nav-item" onclick="navigate('niveles', this)">
+      <span class="nav-icon">📊</span> Niveles
+    </div>
+    <div class="nav-item" onclick="navigate('objetivos', this)">
+      <span class="nav-icon">🎯</span> Objetivos
+    </div>
+    <div class="nav-item" onclick="navigate('planes', this)">
+      <span class="nav-icon">📅</span> Plan Rutina
+    </div>
+    <div class="nav-item" onclick="navigate('clientePlanes', this)">
+      <span class="nav-icon">🔗</span> Cliente - Plan
+    </div>
+  </nav>
+  <div class="sidebar-footer">GymSystem v1.0</div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- ── TOPBAR ── -->
+  <header class="topbar">
+    <div class="page-title" id="pageTitle">PAGOS</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar…" oninput="handleSearch()"/>
+    </div>
+    <button class="btn-new" onclick="openModal()">+ Nuevo</button>
+  </header>
+
+  <!-- ══ PAGOS PAGE ══ -->
+  <div class="content page active" id="page-pagos">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Registros</div><div class="stat-value" id="stat-total-pagos">—</div><div class="stat-sub">pagos en BD</div></div>
+      <div class="stat-card"><div class="stat-label">Monto Total</div><div class="stat-value" id="stat-monto-total">—</div><div class="stat-sub">suma de pagos</div></div>
+      <div class="stat-card"><div class="stat-label">Efectivo</div><div class="stat-value" id="stat-efectivo">—</div><div class="stat-sub">pagos en efectivo</div></div>
+      <div class="stat-card"><div class="stat-label">Tarjeta</div><div class="stat-value" id="stat-tarjeta">—</div><div class="stat-sub">pagos con tarjeta</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Pagos</span><span class="table-count" id="pagos-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Pago</th><th>ID Cliente</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Acciones</th></tr></thead>
+        <tbody id="pagos-tbody"><tr class="loading-row"><td colspan="6">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ASISTENCIAS PAGE ══ -->
+  <div class="content page" id="page-asistencias">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Registros</div><div class="stat-value" id="stat-total-asist">—</div><div class="stat-sub">asistencias en BD</div></div>
+      <div class="stat-card"><div class="stat-label">Hoy</div><div class="stat-value" id="stat-hoy">—</div><div class="stat-sub">asistencias hoy</div></div>
+      <div class="stat-card"><div class="stat-label">Promedio</div><div class="stat-value" id="stat-promedio">—</div><div class="stat-sub">minutos por visita</div></div>
+      <div class="stat-card"><div class="stat-label">Clientes</div><div class="stat-value" id="stat-clientes-asist">—</div><div class="stat-sub">clientes distintos</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Asistencias</span><span class="table-count" id="asist-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Asistencia</th><th>ID Cliente</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Duración</th><th>Acciones</th></tr></thead>
+        <tbody id="asist-tbody"><tr class="loading-row"><td colspan="7">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLIENTES PAGE ══ -->
+  <div class="content page" id="page-clientes">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Clientes</div><div class="stat-value" id="stat-total-clientes">—</div><div class="stat-sub">clientes registrados</div></div>
+      <div class="stat-card"><div class="stat-label">Hombres</div><div class="stat-value" id="stat-hombres">—</div><div class="stat-sub">clientes hombres</div></div>
+      <div class="stat-card"><div class="stat-label">Mujeres</div><div class="stat-value" id="stat-mujeres">—</div><div class="stat-sub">clientes mujeres</div></div>
+      <div class="stat-card"><div class="stat-label">Correos</div><div class="stat-value" id="stat-correos">—</div><div class="stat-sub">emails registrados</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Clientes</span><span class="table-count" id="clientes-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Teléfono</th><th>Email</th><th>Dirección</th><th>Sexo</th><th>Acciones</th></tr></thead>
+        <tbody id="clientes-tbody"><tr class="loading-row"><td colspan="8">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ENTRENADORES PAGE ══ -->
+  <div class="content page" id="page-entrenadores">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Entrenadores</div><div class="stat-value" id="stat-total-entrenadores">—</div><div class="stat-sub">entrenadores registrados</div></div>
+      <div class="stat-card"><div class="stat-label">Activos</div><div class="stat-value" id="stat-entren-activos">—</div><div class="stat-sub">en servicio</div></div>
+      <div class="stat-card"><div class="stat-label">Inactivos</div><div class="stat-value" id="stat-entren-inactivos">—</div><div class="stat-sub">fuera de servicio</div></div>
+      <div class="stat-card"><div class="stat-label">Especialidades</div><div class="stat-value" id="stat-entren-especialidades">—</div><div class="stat-sub">distintas</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Entrenadores</span><span class="table-count" id="entrenadores-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Especialidad</th><th>Fecha Contratación</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="entrenadores-tbody"><tr class="loading-row"><td colspan="7">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ASIGNACIONES PAGE ══ -->
+  <div class="content page" id="page-asignaciones">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Asignaciones</div><div class="stat-value" id="stat-total-asignaciones">—</div><div class="stat-sub">registros en BD</div></div>
+      <div class="stat-card"><div class="stat-label">Clientes Asignados</div><div class="stat-value" id="stat-asign-clientes">—</div><div class="stat-sub">clientes con entrenador</div></div>
+      <div class="stat-card"><div class="stat-label">Entrenadores Activos</div><div class="stat-value" id="stat-asign-entrenadores">—</div><div class="stat-sub">entrenadores asignados</div></div>
+      <div class="stat-card"><div class="stat-label">Promedio</div><div class="stat-value" id="stat-asign-promedio">—</div><div class="stat-sub">clientes por entrenador</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Asignaciones</span><span class="table-count" id="asignaciones-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Cliente</th><th>ID Entrenador</th><th>Acciones</th></tr></thead>
+        <tbody id="asignaciones-tbody"><tr class="loading-row"><td colspan="3">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MEMBRESÍAS PAGE ══ -->
+  <div class="content page" id="page-membresias">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total-memb">—</div><div class="stat-sub">membresías en BD</div></div>
+      <div class="stat-card"><div class="stat-label">Activas</div><div class="stat-value" id="stat-memb-activas">—</div><div class="stat-sub">membresías activas</div></div>
+      <div class="stat-card"><div class="stat-label">Vencidas</div><div class="stat-value" id="stat-memb-vencidas">—</div><div class="stat-sub">membresías vencidas</div></div>
+      <div class="stat-card"><div class="stat-label">Premium / VIP</div><div class="stat-value" id="stat-memb-premium">—</div><div class="stat-sub">tipo premium o VIP</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Membresías</span><span class="table-count" id="memb-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID</th><th>ID Miembro</th><th>Tipo</th><th>Fecha Inicio</th><th>Fecha Fin</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="memb-tbody"><tr class="loading-row"><td colspan="7">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RUTINAS PAGE ══ -->
+  <div class="content page" id="page-rutinas">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Rutinas</div><div class="stat-value" id="stat-total-rut">—</div><div class="stat-sub">rutinas en BD</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Rutinas</span><span class="table-count" id="rut-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Rutina</th><th>Nombre</th><th>Acciones</th></tr></thead>
+        <tbody id="rut-tbody"><tr class="loading-row"><td colspan="3">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ NIVELES PAGE ══ -->
+  <div class="content page" id="page-niveles">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Niveles</div><div class="stat-value" id="stat-total-niv">—</div><div class="stat-sub">niveles en BD</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Niveles</span><span class="table-count" id="niv-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Nivel</th><th>Nivel</th><th>Acciones</th></tr></thead>
+        <tbody id="niv-tbody"><tr class="loading-row"><td colspan="3">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OBJETIVOS PAGE ══ -->
+  <div class="content page" id="page-objetivos">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Objetivos</div><div class="stat-value" id="stat-total-obj">—</div><div class="stat-sub">objetivos en BD</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Objetivos</span><span class="table-count" id="obj-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Objetivo</th><th>Objetivo</th><th>Acciones</th></tr></thead>
+        <tbody id="obj-tbody"><tr class="loading-row"><td colspan="3">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PLAN RUTINA PAGE ══ -->
+  <div class="content page" id="page-planes">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Planes</div><div class="stat-value" id="stat-total-plan">—</div><div class="stat-sub">planes en BD</div></div>
+      <div class="stat-card"><div class="stat-label">Días Promedio</div><div class="stat-value" id="stat-dias-plan">—</div><div class="stat-sub">duración promedio</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Lista de Planes de Rutina</span><span class="table-count" id="plan-count">cargando…</span></div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Plan</th><th>ID Rutina</th><th>ID Nivel</th><th>ID Objetivo</th><th>Duración (días)</th><th>Acciones</th></tr></thead>
+        <tbody id="plan-tbody"><tr class="loading-row"><td colspan="6">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLIENTE - PLAN RUTINA PAGE ══ -->
+  <div class="content page" id="page-clientePlanes">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Asignaciones</div><div class="stat-value" id="stat-total-cpr">—</div><div class="stat-sub">asignaciones activas</div></div>
+      <div class="stat-card"><div class="stat-label">Clientes con Plan</div><div class="stat-value" id="stat-clientes-cpr">—</div><div class="stat-sub">clientes asignados</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Asignaciones Cliente - Plan Rutina</span>
+        <span class="table-count" id="cpr-count">cargando…</span>
+      </div>
+      <div class="table-scroll">
+        <table><thead><tr><th>ID Cliente</th><th>ID Plan</th><th>Acciones</th></tr></thead>
+        <tbody id="cpr-tbody"><tr class="loading-row"><td colspan="3">Cargando datos…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══════════════ MODAL PAGO ══════════════ -->
+<div class="modal-overlay" id="modal-pago">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-pago-title">NUEVO PAGO</span><button class="modal-close" onclick="closeModal('modal-pago')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pago-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID PAGO</label><input type="number" id="pago-id" placeholder="ej: 11"/></div>
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="pago-cliente" placeholder="ej: 376827"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>MÉTODO DE PAGO</label>
+          <select id="pago-metodo"><option value="">Seleccionar…</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option></select>
+        </div>
+        <div class="field"><label>MONTO ($)</label><input type="number" step="0.01" id="pago-monto" placeholder="ej: 500.00"/></div>
+      </div>
+      <div class="field"><label>FECHA DE PAGO</label><input type="date" id="pago-fecha"/></div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-pago')">Cancelar</button><button class="btn-save" onclick="savePago()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ASISTENCIA ══════════════ -->
+<div class="modal-overlay" id="modal-asistencia">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-asist-title">NUEVA ASISTENCIA</span><button class="modal-close" onclick="closeModal('modal-asistencia')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="asist-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID ASISTENCIA</label><input type="number" id="asist-id" placeholder="ej: 11"/></div>
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="asist-cliente" placeholder="ej: 376827"/></div>
+      </div>
+      <div class="field"><label>FECHA</label><input type="date" id="asist-fecha"/></div>
+      <div class="field-row">
+        <div class="field"><label>HORA ENTRADA</label><input type="datetime-local" id="asist-entrada"/></div>
+        <div class="field"><label>HORA SALIDA</label><input type="datetime-local" id="asist-salida"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-asistencia')">Cancelar</button><button class="btn-save" onclick="saveAsistencia()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CLIENTE ══════════════ -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-cliente-title">NUEVO CLIENTE</span>
+      <button class="modal-close" onclick="closeModal('modal-cliente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cliente-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="cliente-id" placeholder="ej: 376827"/></div>
+        <div class="field"><label>NOMBRE</label><input type="text" id="cliente-nombre" placeholder="ej: Juan"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>APELLIDO</label><input type="text" id="cliente-apellido" placeholder="ej: Pérez"/></div>
+        <div class="field"><label>TELÉFONO</label><input type="text" id="cliente-telefono" placeholder="6141234567"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>EMAIL</label><input type="email" id="cliente-email" placeholder="correo@gmail.com"/></div>
+        <div class="field">
+          <label>SEXO</label>
+          <select id="cliente-sexo">
+            <option value="">Seleccionar…</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Mujer">Mujer</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>DIRECCIÓN</label><input type="text" id="cliente-direccion" placeholder="Dirección"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn-save" onclick="saveCliente()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ENTRENADOR ══════════════ -->
+<div class="modal-overlay" id="modal-entrenador">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-entrenador-title">NUEVO ENTRENADOR</span>
+      <button class="modal-close" onclick="closeModal('modal-entrenador')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="entrenador-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID ENTRENADOR</label><input type="number" id="entrenador-id" placeholder="ej: 1"/></div>
+        <div class="field"><label>NOMBRE</label><input type="text" id="entrenador-nombre" placeholder="ej: Carlos"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>APELLIDO</label><input type="text" id="entrenador-apellido" placeholder="ej: Ramírez"/></div>
+        <div class="field"><label>FECHA CONTRATACIÓN</label><input type="date" id="entrenador-fecha"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>ESPECIALIDAD</label><input type="text" id="entrenador-especialidad" placeholder="ej: Musculación"/></div>
+        <div class="field">
+          <label>ESTADO</label>
+          <select id="entrenador-estado">
+            <option value="">Seleccionar…</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+            <option value="Vacaciones">Vacaciones</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-entrenador')">Cancelar</button>
+      <button class="btn-save" onclick="saveEntrenador()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ASIGNACION ══════════════ -->
+<div class="modal-overlay" id="modal-asignacion">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-asignacion-title">NUEVA ASIGNACIÓN</span>
+      <button class="modal-close" onclick="closeModal('modal-asignacion')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="asignacion-editing-cliente"/>
+      <input type="hidden" id="asignacion-editing-entrenador"/>
+      <div class="field-row">
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="asignacion-cliente" placeholder="ej: 376827"/></div>
+        <div class="field"><label>ID ENTRENADOR</label><input type="number" id="asignacion-entrenador" placeholder="ej: 10"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-asignacion')">Cancelar</button>
+      <button class="btn-save" onclick="saveAsignacion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL MEMBRESÍA ══════════════ -->
+<div class="modal-overlay" id="modal-membresia">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-memb-title">NUEVA MEMBRESÍA</span><button class="modal-close" onclick="closeModal('modal-membresia')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="memb-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID MEMBRESÍA</label><input type="number" id="memb-id" placeholder="ej: 6"/></div>
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="memb-cliente" placeholder="ej: 376827"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>TIPO</label>
+          <select id="memb-tipo"><option value="">Seleccionar…</option><option value="Básica">Básica</option><option value="Premium">Premium</option><option value="VIP">VIP</option></select>
+        </div>
+        <div class="field"><label>ESTADO</label>
+          <select id="memb-estado"><option value="">Seleccionar…</option><option value="Activa">Activa</option><option value="Vencida">Vencida</option><option value="Suspendida">Suspendida</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>FECHA INICIO</label><input type="date" id="memb-inicio"/></div>
+        <div class="field"><label>FECHA FIN</label><input type="date" id="memb-fin"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-membresia')">Cancelar</button><button class="btn-save" onclick="saveMembresia()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL RUTINA ══════════════ -->
+<div class="modal-overlay" id="modal-rutina">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-rut-title">NUEVA RUTINA</span><button class="modal-close" onclick="closeModal('modal-rutina')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="rut-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID RUTINA</label><input type="number" id="rut-id" placeholder="ej: 6"/></div>
+        <div class="field"><label>NOMBRE RUTINA</label><input type="text" id="rut-nombre" placeholder="ej: Hombros"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-rutina')">Cancelar</button><button class="btn-save" onclick="saveRutina()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL NIVEL ══════════════ -->
+<div class="modal-overlay" id="modal-nivel">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-niv-title">NUEVO NIVEL</span><button class="modal-close" onclick="closeModal('modal-nivel')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="niv-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID NIVEL</label><input type="number" id="niv-id" placeholder="ej: 4"/></div>
+        <div class="field"><label>NIVEL</label><input type="text" id="niv-nivel" placeholder="ej: Élite"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-nivel')">Cancelar</button><button class="btn-save" onclick="saveNivel()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL OBJETIVO ══════════════ -->
+<div class="modal-overlay" id="modal-objetivo">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-obj-title">NUEVO OBJETIVO</span><button class="modal-close" onclick="closeModal('modal-objetivo')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="obj-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID OBJETIVO</label><input type="number" id="obj-id" placeholder="ej: 5"/></div>
+        <div class="field"><label>OBJETIVO</label><input type="text" id="obj-objetivo" placeholder="ej: Flexibilidad"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-objetivo')">Cancelar</button><button class="btn-save" onclick="saveObjetivo()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL PLAN RUTINA ══════════════ -->
+<div class="modal-overlay" id="modal-plan">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-plan-title">NUEVO PLAN</span><button class="modal-close" onclick="closeModal('modal-plan')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="plan-id-editing"/>
+      <div class="field-row">
+        <div class="field"><label>ID PLAN</label><input type="number" id="plan-id" placeholder="ej: 6"/></div>
+        <div class="field"><label>ID RUTINA</label><input type="number" id="plan-rutina" placeholder="ej: 1"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>ID NIVEL</label><input type="number" id="plan-nivel" placeholder="ej: 1"/></div>
+        <div class="field"><label>ID OBJETIVO</label><input type="number" id="plan-objetivo" placeholder="ej: 1"/></div>
+      </div>
+      <div class="field"><label>DURACIÓN (DÍAS)</label><input type="number" id="plan-duracion" placeholder="ej: 30"/></div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-plan')">Cancelar</button><button class="btn-save" onclick="savePlan()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CLIENTE - PLAN RUTINA ══════════════ -->
+<div class="modal-overlay" id="modal-cpr">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">ASIGNAR PLAN A CLIENTE</span><button class="modal-close" onclick="closeModal('modal-cpr')">✕</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>ID CLIENTE</label><input type="number" id="cpr-cliente" placeholder="ej: 376827"/></div>
+        <div class="field"><label>ID PLAN</label><input type="number" id="cpr-plan" placeholder="ej: 1"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-cpr')">Cancelar</button><button class="btn-save" onclick="saveClientePlan()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ CONFIRM DELETE ══════════════ -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">¿Eliminar registro?</div>
+    <div class="confirm-msg">Esta acción no se puede deshacer.</div>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-confirm-del" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOAST ══════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
+<script>
+// ── IMPORTANTE: Apunta a tu servidor Spring Boot ──────────
+const API = 'http://localhost:8080';
+
+let currentPage     = 'pagos';
+let allPagos        = [];
+let allAsistencias  = [];
+let allClientes     = [];
+let allEntrenadores = [];
+let allAsignaciones = [];
+let allMembresias   = [];
+let allClientePlanes = [];
+let allRutinas      = [];
+let allNiveles      = [];
+let allObjetivos    = [];
+let allPlanes       = [];
+let deleteTarget    = { type: null, id: null };
+
+// ── NAVIGATION ──────────────────────────────────────────
+function navigate(page, el) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const titles = { pagos:'PAGOS', asistencias:'ASISTENCIAS', clientes:'CLIENTES', entrenadores:'ENTRENADORES',
+                   asignaciones:'ASIGNACIONES', membresias:'MEMBRESÍAS', rutinas:'RUTINAS',
+                   niveles:'NIVELES', objetivos:'OBJETIVOS', planes:'PLAN RUTINA', clientePlanes:'CLIENTE - PLAN' };
+  document.getElementById('pageTitle').textContent = titles[page] || page.toUpperCase();
+  document.getElementById('searchInput').value = '';
+  const loaders = {
+    pagos: loadPagos, asistencias: loadAsistencias, clientes: loadClientes,
+    entrenadores: loadEntrenadores, asignaciones: loadAsignaciones,
+    membresias: loadMembresias, rutinas: loadRutinas, niveles: loadNiveles,
+    objetivos: loadObjetivos, planes: loadPlanes, clientePlanes: loadClientePlanes
+  };
+  if (loaders[page]) loaders[page]();
+}
+
+// ── SEARCH ──────────────────────────────────────────────
+function handleSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (currentPage === 'pagos')
+    renderPagos(q ? allPagos.filter(p => String(p.idCliente).includes(q)) : allPagos);
+  else if (currentPage === 'asistencias')
+    renderAsistencias(q ? allAsistencias.filter(a => String(a.idCliente).includes(q)) : allAsistencias);
+  else if (currentPage === 'clientes')
+    renderClientes(q ? allClientes.filter(c => String(c.idCliente).includes(q) || (c.nombre||'').toLowerCase().includes(q)) : allClientes);
+  else if (currentPage === 'entrenadores')
+    renderEntrenadores(q ? allEntrenadores.filter(e => String(e.idEntrenador).includes(q) || (e.nombre||'').toLowerCase().includes(q) || (e.especialidad||'').toLowerCase().includes(q)) : allEntrenadores);
+  else if (currentPage === 'asignaciones')
+    renderAsignaciones(q ? allAsignaciones.filter(a => String(a.idCliente).includes(q) || String(a.idEntrenador).includes(q)) : allAsignaciones);
+  else if (currentPage === 'membresias')
+    renderMembresias(q ? allMembresias.filter(m => String(m.idCliente).includes(q) || (m.estado||'').toLowerCase().includes(q)) : allMembresias);
+  else if (currentPage === 'rutinas')
+    renderRutinas(q ? allRutinas.filter(r => r.nombreRutina.toLowerCase().includes(q)) : allRutinas);
+  else if (currentPage === 'niveles')
+    renderNiveles(q ? allNiveles.filter(n => n.nivel.toLowerCase().includes(q)) : allNiveles);
+  else if (currentPage === 'objetivos')
+    renderObjetivos(q ? allObjetivos.filter(o => o.objetivo.toLowerCase().includes(q)) : allObjetivos);
+  else if (currentPage === 'planes')
+    renderPlanes(q ? allPlanes.filter(p => String(p.idPlan).includes(q)) : allPlanes);
+  else if (currentPage === 'clientePlanes')
+    renderClientePlanes(q ? allClientePlanes.filter(x => String(x.idCliente||x.id?.idCliente).includes(q) || String(x.idPlan||x.id?.idPlan).includes(q)) : allClientePlanes);
+}
+
+// ── MODAL OPEN ───────────────────────────────────────────
+function openModal() {
+  if (currentPage === 'pagos') {
+    document.getElementById('modal-pago-title').textContent = 'NUEVO PAGO';
+    document.getElementById('pago-id-editing').value = '';
+    ['pago-id','pago-cliente','pago-monto','pago-fecha'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pago-metodo').value = '';
+    document.getElementById('pago-id').disabled = false;
+    document.getElementById('modal-pago').classList.add('open');
+  } else if (currentPage === 'asistencias') {
+    document.getElementById('modal-asist-title').textContent = 'NUEVA ASISTENCIA';
+    document.getElementById('asist-id-editing').value = '';
+    ['asist-id','asist-cliente','asist-fecha','asist-entrada','asist-salida'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('asist-id').disabled = false;
+    document.getElementById('modal-asistencia').classList.add('open');
+  } else if (currentPage === 'clientes') {
+    document.getElementById('modal-cliente-title').textContent = 'NUEVO CLIENTE';
+    document.getElementById('cliente-id-editing').value = '';
+    ['cliente-id','cliente-nombre','cliente-apellido','cliente-telefono','cliente-email','cliente-direccion'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cliente-sexo').value = '';
+    document.getElementById('cliente-id').disabled = false;
+    document.getElementById('modal-cliente').classList.add('open');
+  } else if (currentPage === 'entrenadores') {
+    document.getElementById('modal-entrenador-title').textContent = 'NUEVO ENTRENADOR';
+    document.getElementById('entrenador-id-editing').value = '';
+    ['entrenador-id','entrenador-nombre','entrenador-apellido','entrenador-fecha','entrenador-especialidad'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('entrenador-estado').value = '';
+    document.getElementById('entrenador-id').disabled = false;
+    document.getElementById('modal-entrenador').classList.add('open');
+  } else if (currentPage === 'asignaciones') {
+    document.getElementById('modal-asignacion-title').textContent = 'NUEVA ASIGNACIÓN';
+    document.getElementById('asignacion-editing-cliente').value = '';
+    document.getElementById('asignacion-editing-entrenador').value = '';
+    document.getElementById('asignacion-cliente').value = '';
+    document.getElementById('asignacion-entrenador').value = '';
+    document.getElementById('asignacion-cliente').disabled = false;
+    document.getElementById('asignacion-entrenador').disabled = false;
+    document.getElementById('modal-asignacion').classList.add('open');
+  } else if (currentPage === 'membresias') {
+    document.getElementById('modal-memb-title').textContent = 'NUEVA MEMBRESÍA';
+    document.getElementById('memb-id-editing').value = '';
+    ['memb-id','memb-cliente','memb-inicio','memb-fin'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('memb-tipo').value = '';
+    document.getElementById('memb-estado').value = '';
+    document.getElementById('memb-id').disabled = false;
+    document.getElementById('modal-membresia').classList.add('open');
+  } else if (currentPage === 'rutinas') {
+    document.getElementById('modal-rut-title').textContent = 'NUEVA RUTINA';
+    document.getElementById('rut-id-editing').value = '';
+    ['rut-id','rut-nombre'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rut-id').disabled = false;
+    document.getElementById('modal-rutina').classList.add('open');
+  } else if (currentPage === 'niveles') {
+    document.getElementById('modal-niv-title').textContent = 'NUEVO NIVEL';
+    document.getElementById('niv-id-editing').value = '';
+    ['niv-id','niv-nivel'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('niv-id').disabled = false;
+    document.getElementById('modal-nivel').classList.add('open');
+  } else if (currentPage === 'objetivos') {
+    document.getElementById('modal-obj-title').textContent = 'NUEVO OBJETIVO';
+    document.getElementById('obj-id-editing').value = '';
+    ['obj-id','obj-objetivo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('obj-id').disabled = false;
+    document.getElementById('modal-objetivo').classList.add('open');
+  } else if (currentPage === 'planes') {
+    document.getElementById('modal-plan-title').textContent = 'NUEVO PLAN';
+    document.getElementById('plan-id-editing').value = '';
+    ['plan-id','plan-rutina','plan-nivel','plan-objetivo','plan-duracion'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('plan-id').disabled = false;
+    document.getElementById('modal-plan').classList.add('open');
+  } else if (currentPage === 'clientePlanes') {
+    document.getElementById('cpr-cliente').value = '';
+    document.getElementById('cpr-plan').value = '';
+    document.getElementById('modal-cpr').classList.add('open');
+  }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════
+// ── PAGOS — campos camelCase según Spring Boot ──────────
+// ════════════════════════════════════════════════════════
+async function loadPagos() {
+  try {
+    const r = await fetch(`${API}/api/pagos`);
+    allPagos = await r.json();
+    renderPagos(allPagos);
+    updatePagoStats(allPagos);
+  } catch {
+    document.getElementById('pagos-tbody').innerHTML =
+      `<tr class="loading-row"><td colspan="6">⚠️ No se pudo conectar a la API.</td></tr>`;
+    showToast('Error al cargar pagos', 'err');
+  }
+}
+
+function renderPagos(data) {
+  const tbody = document.getElementById('pagos-tbody');
+  document.getElementById('pagos-count').textContent = data.length + ' registros';
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">💳</div><p>Sin resultados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(p => `<tr>
+    <td><strong>${p.idPago}</strong></td>
+    <td>${p.idCliente}</td>
+    <td><span class="badge badge-${(p.metodoPago||'').toLowerCase()}">${p.metodoPago}</span></td>
+    <td>$${Number(p.monto).toFixed(2)}</td>
+    <td>${formatDate(p.fechaPago)}</td>
+    <td><div class="actions-cell">
+      <button class="action-btn" onclick="editPago(${p.idPago})">✏️ Editar</button>
+      <button class="action-btn danger" onclick="askDelete('pago',${p.idPago})">🗑️ Eliminar</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function updatePagoStats(data) {
+  document.getElementById('stat-total-pagos').textContent  = data.length;
+  document.getElementById('stat-monto-total').textContent  = '$' + data.reduce((s,p) => s + Number(p.monto), 0).toFixed(0);
+  document.getElementById('stat-efectivo').textContent     = data.filter(p => p.metodoPago === 'Efectivo').length;
+  document.getElementById('stat-tarjeta').textContent      = data.filter(p => p.metodoPago === 'Tarjeta').length;
+}
+
+async function savePago() {
+  const editing = document.getElementById('pago-id-editing').value;
+  const body = {
+    idPago:      parseInt(document.getElementById('pago-id').value),
+    idCliente:   parseInt(document.getElementById('pago-cliente').value),
+    metodoPago:  document.getElementById('pago-metodo').value,
+    monto:       parseFloat(document.getElementById('pago-monto').value),
+    fechaPago:   document.getElementById('pago-fecha').value
+  };
+  if (!body.idPago || !body.idCliente || !body.metodoPago || !body.monto || !body.fechaPago) {
+    showToast('Completa todos los campos', 'err'); return;
+  }
+  try {
+    const r = await fetch(
+      editing ? `${API}/api/pagos/${editing}` : `${API}/api/pagos`,
+      { method: editing ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }
+    );
+    if (!r.ok) throw new Error();
+    closeModal('modal-pago');
+    await loadPagos();
+    showToast(editing ? 'Pago actualizado ✓' : 'Pago creado ✓', 'ok');
+  } catch { showToast('Error al guardar el pago', 'err'); }
+}
+
+async function editPago(id) {
+  const p = allPagos.find(x => x.idPago === id); if (!p) return;
+  document.getElementById('modal-pago-title').textContent  = 'EDITAR PAGO';
+  document.getElementById('pago-id-editing').value         = id;
+  document.getElementById('pago-id').value                 = p.idPago;
+  document.getElementById('pago-id').disabled              = true;
+  document.getElementById('pago-cliente').value            = p.idCliente;
+  document.getElementById('pago-metodo').value             = p.metodoPago;
+  document.getElementById('pago-monto').value              = p.monto;
+  document.getElementById('pago-fecha').value              = p.fechaPago;
+  document.getElementById('modal-pago').classList.add('open');
+}
+
+// ── ASISTENCIAS ──────────────────────────────────────────
+async function loadAsistencias() {
+  try {
+    const r = await fetch(`${API}/api/asistencias`); allAsistencias = await r.json();
+    renderAsistencias(allAsistencias); updateAsistStats(allAsistencias);
+  } catch { document.getElementById('asist-tbody').innerHTML=`<tr class="loading-row"><td colspan="7">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar asistencias','err'); }
+}
+function renderAsistencias(data) {
+  const tbody = document.getElementById('asist-tbody');
+  document.getElementById('asist-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(a => { const mins=calcMinutos(a.horaEntrada,a.horaSalida); return `<tr>
+    <td><strong>${a.idAsistencia}</strong></td><td>${a.idCliente}</td><td>${formatDate(a.fechaAsistencia)}</td>
+    <td>${formatTime(a.horaEntrada)}</td><td>${formatTime(a.horaSalida)}</td><td>${mins>0?mins+' min':'—'}</td>
+    <td><div class="actions-cell"><button class="action-btn" onclick="editAsistencia(${a.idAsistencia})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('asistencia',${a.idAsistencia})">🗑️ Eliminar</button></div></td>
+  </tr>`; }).join('');
+}
+function updateAsistStats(data) {
+  document.getElementById('stat-total-asist').textContent = data.length;
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('stat-hoy').textContent = data.filter(a=>(a.fechaAsistencia||'').slice(0,10)===today).length;
+  const totalMins=data.reduce((s,a)=>s+calcMinutos(a.horaEntrada,a.horaSalida),0);
+  document.getElementById('stat-promedio').textContent = data.length?Math.round(totalMins/data.length):0;
+  document.getElementById('stat-clientes-asist').textContent = new Set(data.map(a=>a.idCliente)).size;
+}
+async function saveAsistencia() {
+  const editing = document.getElementById('asist-id-editing').value;
+  const body = { idAsistencia:parseInt(document.getElementById('asist-id').value), idCliente:parseInt(document.getElementById('asist-cliente').value), fechaAsistencia:document.getElementById('asist-fecha').value, horaEntrada:document.getElementById('asist-entrada').value, horaSalida:document.getElementById('asist-salida').value };
+  if (!body.idAsistencia||!body.idCliente||!body.fechaAsistencia||!body.horaEntrada||!body.horaSalida) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/asistencias/${editing}`:`${API}/api/asistencias`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-asistencia'); await loadAsistencias(); showToast(editing?'Asistencia actualizada ✓':'Asistencia creada ✓','ok');
+  } catch { showToast('Error al guardar la asistencia','err'); }
+}
+async function editAsistencia(id) {
+  const a = allAsistencias.find(x=>x.idAsistencia===id); if (!a) return;
+  document.getElementById('modal-asist-title').textContent = 'EDITAR ASISTENCIA';
+  document.getElementById('asist-id-editing').value=id;
+  document.getElementById('asist-id').value=a.idAsistencia; document.getElementById('asist-id').disabled=true;
+  document.getElementById('asist-cliente').value=a.idCliente; document.getElementById('asist-fecha').value=(a.fechaAsistencia||'').slice(0,10);
+  document.getElementById('asist-entrada').value=formatDatetimeLocal(a.horaEntrada); document.getElementById('asist-salida').value=formatDatetimeLocal(a.horaSalida);
+  document.getElementById('modal-asistencia').classList.add('open');
+}
+
+// ── CLIENTES ─────────────────────────────────────────────
+async function loadClientes() {
+  try {
+    const r = await fetch(`${API}/api/clientes`);
+    allClientes = await r.json();
+    renderClientes(allClientes); updateClienteStats(allClientes);
+  } catch {
+    document.getElementById('clientes-tbody').innerHTML = `<tr class="loading-row"><td colspan="8">⚠️ No se pudo conectar a la API.</td></tr>`;
+    showToast('Error al cargar clientes', 'err');
+  }
+}
+function renderClientes(data) {
+  const tbody = document.getElementById('clientes-tbody');
+  document.getElementById('clientes-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">👥</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td><strong>${c.idCliente}</strong></td><td>${c.nombre}</td><td>${c.apellido}</td>
+      <td>${c.telefono}</td><td>${c.correo}</td><td>${c.domicilio}</td><td>${c.sexo}</td>
+      <td><div class="actions-cell">
+        <button class="action-btn" onclick="editCliente(${c.idCliente})">✏️ Editar</button>
+        <button class="action-btn danger" onclick="askDelete('cliente',${c.idCliente})">🗑️ Eliminar</button>
+      </div></td>
+    </tr>`).join('');
+}
+function updateClienteStats(data) {
+  document.getElementById('stat-total-clientes').textContent = data.length;
+  document.getElementById('stat-hombres').textContent = data.filter(c => c.sexo === 'Hombre').length;
+  document.getElementById('stat-mujeres').textContent = data.filter(c => c.sexo === 'Mujer').length;
+  document.getElementById('stat-correos').textContent = data.filter(c => c.correo).length;
+}
+async function saveCliente() {
+  const editing = document.getElementById('cliente-id-editing').value;
+  const body = {
+    idCliente: parseInt(document.getElementById('cliente-id').value),
+    nombre: document.getElementById('cliente-nombre').value,
+    apellido: document.getElementById('cliente-apellido').value,
+    telefono: document.getElementById('cliente-telefono').value,
+    correo: document.getElementById('cliente-email').value,
+    domicilio: document.getElementById('cliente-direccion').value,
+    sexo: document.getElementById('cliente-sexo').value
+  };
+  if (!body.idCliente||!body.nombre||!body.apellido||!body.telefono||!body.correo||!body.domicilio||!body.sexo) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/clientes/${editing}`:`${API}/api/clientes`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-cliente'); await loadClientes(); showToast(editing?'Cliente actualizado ✓':'Cliente creado ✓','ok');
+  } catch { showToast('Error al guardar cliente','err'); }
+}
+async function editCliente(id) {
+  const c = allClientes.find(x=>x.idCliente===id); if (!c) return;
+  document.getElementById('modal-cliente-title').textContent = 'EDITAR CLIENTE';
+  document.getElementById('cliente-id-editing').value=id;
+  document.getElementById('cliente-id').value=c.idCliente; document.getElementById('cliente-id').disabled=true;
+  document.getElementById('cliente-nombre').value=c.nombre;
+  document.getElementById('cliente-apellido').value=c.apellido;
+  document.getElementById('cliente-telefono').value=c.telefono;
+  document.getElementById('cliente-email').value=c.correo;
+  document.getElementById('cliente-direccion').value=c.domicilio;
+  document.getElementById('cliente-sexo').value=c.sexo;
+  document.getElementById('modal-cliente').classList.add('open');
+}
+
+// ── ENTRENADORES ─────────────────────────────────────────
+async function loadEntrenadores() {
+  try {
+    const r = await fetch(`${API}/api/entrenadores`);
+    allEntrenadores = await r.json();
+    renderEntrenadores(allEntrenadores); updateEntrenadorStats(allEntrenadores);
+  } catch {
+    document.getElementById('entrenadores-tbody').innerHTML = `<tr class="loading-row"><td colspan="7">⚠️ No se pudo conectar a la API.</td></tr>`;
+    showToast('Error al cargar entrenadores','err');
+  }
+}
+function renderEntrenadores(data) {
+  const tbody = document.getElementById('entrenadores-tbody');
+  document.getElementById('entrenadores-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏋️</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(e => `
+    <tr>
+      <td><strong>${e.idEntrenador}</strong></td><td>${e.nombre}</td><td>${e.apellido}</td>
+      <td>${e.especialidad}</td><td>${formatDate(e.fechaContratacion)}</td>
+      <td><span class="badge badge-${(e.estado||'').toLowerCase()}">${e.estado}</span></td>
+      <td><div class="actions-cell">
+        <button class="action-btn" onclick="editEntrenador(${e.idEntrenador})">✏️ Editar</button>
+        <button class="action-btn danger" onclick="askDelete('entrenador',${e.idEntrenador})">🗑️ Eliminar</button>
+      </div></td>
+    </tr>`).join('');
+}
+function updateEntrenadorStats(data) {
+  document.getElementById('stat-total-entrenadores').textContent = data.length;
+  document.getElementById('stat-entren-activos').textContent    = data.filter(e=>e.estado==='Activo').length;
+  document.getElementById('stat-entren-inactivos').textContent  = data.filter(e=>e.estado==='Inactivo').length;
+  document.getElementById('stat-entren-especialidades').textContent = new Set(data.map(e=>e.especialidad).filter(Boolean)).size;
+}
+async function saveEntrenador() {
+  const editing = document.getElementById('entrenador-id-editing').value;
+  const body = {
+    idEntrenador: parseInt(document.getElementById('entrenador-id').value),
+    nombre: document.getElementById('entrenador-nombre').value,
+    apellido: document.getElementById('entrenador-apellido').value,
+    fechaContratacion: document.getElementById('entrenador-fecha').value,
+    especialidad: document.getElementById('entrenador-especialidad').value,
+    estado: document.getElementById('entrenador-estado').value
+  };
+  if (!body.idEntrenador||!body.nombre||!body.apellido||!body.fechaContratacion||!body.especialidad||!body.estado) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/entrenadores/${editing}`:`${API}/api/entrenadores`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-entrenador'); await loadEntrenadores(); showToast(editing?'Entrenador actualizado ✓':'Entrenador creado ✓','ok');
+  } catch { showToast('Error al guardar entrenador','err'); }
+}
+async function editEntrenador(id) {
+  const e = allEntrenadores.find(x=>x.idEntrenador===id); if (!e) return;
+  document.getElementById('modal-entrenador-title').textContent = 'EDITAR ENTRENADOR';
+  document.getElementById('entrenador-id-editing').value=id;
+  document.getElementById('entrenador-id').value=e.idEntrenador; document.getElementById('entrenador-id').disabled=true;
+  document.getElementById('entrenador-nombre').value=e.nombre;
+  document.getElementById('entrenador-apellido').value=e.apellido;
+  document.getElementById('entrenador-fecha').value=(e.fechaContratacion||'').slice(0,10);
+  document.getElementById('entrenador-especialidad').value=e.especialidad;
+  document.getElementById('entrenador-estado').value=e.estado;
+  document.getElementById('modal-entrenador').classList.add('open');
+}
+
+// ── ASIGNACIONES ─────────────────────────────────────────
+async function loadAsignaciones() {
+  try {
+    const r = await fetch(`${API}/api/asignaciones`);
+    allAsignaciones = await r.json();
+    renderAsignaciones(allAsignaciones); updateAsignacionStats(allAsignaciones);
+  } catch {
+    document.getElementById('asignaciones-tbody').innerHTML = `<tr class="loading-row"><td colspan="3">⚠️ No se pudo conectar a la API.</td></tr>`;
+    showToast('Error al cargar asignaciones','err');
+  }
+}
+function renderAsignaciones(data) {
+  const tbody = document.getElementById('asignaciones-tbody');
+  document.getElementById('asignaciones-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="3"><div class="empty"><div class="empty-icon">🔗</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(a => `
+    <tr>
+      <td><strong>${a.idCliente}</strong></td>
+      <td><strong>${a.idEntrenador}</strong></td>
+      <td><div class="actions-cell">
+        <button class="action-btn danger" onclick="askDelete('asignacion','${a.idCliente}_${a.idEntrenador}')">🗑️ Eliminar</button>
+      </div></td>
+    </tr>`).join('');
+}
+function updateAsignacionStats(data) {
+  document.getElementById('stat-total-asignaciones').textContent = data.length;
+  const clientesUnicos = new Set(data.map(a=>a.idCliente)).size;
+  const entrenadoresUnicos = new Set(data.map(a=>a.idEntrenador)).size;
+  document.getElementById('stat-asign-clientes').textContent = clientesUnicos;
+  document.getElementById('stat-asign-entrenadores').textContent = entrenadoresUnicos;
+  document.getElementById('stat-asign-promedio').textContent = entrenadoresUnicos>0?(clientesUnicos/entrenadoresUnicos).toFixed(1):'0';
+}
+async function saveAsignacion() {
+  const idCliente    = parseInt(document.getElementById('asignacion-cliente').value);
+  const idEntrenador = parseInt(document.getElementById('asignacion-entrenador').value);
+  if (!idCliente||!idEntrenador) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(`${API}/api/asignaciones`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({idCliente,idEntrenador}) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-asignacion'); await loadAsignaciones(); showToast('Asignación creada ✓','ok');
+  } catch { showToast('Error al guardar la asignación','err'); }
+}
+
+// ── MEMBRESÍAS ───────────────────────────────────────────
+async function loadMembresias() {
+  try {
+    const r = await fetch(`${API}/api/membresias`); allMembresias = await r.json();
+    renderMembresias(allMembresias); updateMembStats(allMembresias);
+  } catch { document.getElementById('memb-tbody').innerHTML=`<tr class="loading-row"><td colspan="7">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar membresías','err'); }
+}
+function renderMembresias(data) {
+  const tbody = document.getElementById('memb-tbody');
+  document.getElementById('memb-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">💎</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(m => {
+    const estadoClass = m.estado==='Activa'?'activo':m.estado==='Vencida'?'inactivo':'';
+    return `<tr>
+      <td><strong>${m.idMembresia}</strong></td><td>${m.idCliente}</td>
+      <td>${m.tipoMembresia}</td><td>${formatDate(m.fechaInicio)}</td><td>${formatDate(m.fechaFin)}</td>
+      <td><span class="badge badge-${estadoClass}">${m.estado}</span></td>
+      <td><div class="actions-cell"><button class="action-btn" onclick="editMembresia(${m.idMembresia})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('membresia',${m.idMembresia})">🗑️ Eliminar</button></div></td>
+    </tr>`;
+  }).join('');
+}
+function updateMembStats(data) {
+  document.getElementById('stat-total-memb').textContent    = data.length;
+  document.getElementById('stat-memb-activas').textContent  = data.filter(m=>m.estado==='Activa').length;
+  document.getElementById('stat-memb-vencidas').textContent = data.filter(m=>m.estado==='Vencida').length;
+  document.getElementById('stat-memb-premium').textContent  = data.filter(m=>m.tipoMembresia==='Premium'||m.tipoMembresia==='VIP').length;
+}
+async function saveMembresia() {
+  const editing = document.getElementById('memb-id-editing').value;
+  const body = { idMembresia:parseInt(document.getElementById('memb-id').value), idCliente:parseInt(document.getElementById('memb-cliente').value), tipoMembresia:document.getElementById('memb-tipo').value, fechaInicio:document.getElementById('memb-inicio').value||null, fechaFin:document.getElementById('memb-fin').value||null, estado:document.getElementById('memb-estado').value };
+  if (!body.idMembresia||!body.idCliente||!body.tipoMembresia||!body.fechaInicio||!body.estado) { showToast('Completa los campos obligatorios','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/membresias/${editing}`:`${API}/api/membresias`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-membresia'); await loadMembresias(); showToast(editing?'Membresía actualizada ✓':'Membresía creada ✓','ok');
+  } catch { showToast('Error al guardar la membresía','err'); }
+}
+async function editMembresia(id) {
+  const m = allMembresias.find(x=>x.idMembresia===id); if (!m) return;
+  document.getElementById('modal-memb-title').textContent = 'EDITAR MEMBRESÍA';
+  document.getElementById('memb-id-editing').value=id;
+  document.getElementById('memb-id').value=m.idMembresia; document.getElementById('memb-id').disabled=true;
+  document.getElementById('memb-cliente').value=m.idCliente; document.getElementById('memb-tipo').value=m.tipoMembresia;
+  document.getElementById('memb-inicio').value=(m.fechaInicio||'').slice(0,10); document.getElementById('memb-fin').value=(m.fechaFin||'').slice(0,10);
+  document.getElementById('memb-estado').value=m.estado; document.getElementById('modal-membresia').classList.add('open');
+}
+
+// ── RUTINAS ──────────────────────────────────────────────
+async function loadRutinas() {
+  try {
+    const r = await fetch(`${API}/api/rutinas`); allRutinas = await r.json();
+    renderRutinas(allRutinas); document.getElementById('stat-total-rut').textContent=allRutinas.length;
+  } catch { document.getElementById('rut-tbody').innerHTML=`<tr class="loading-row"><td colspan="3">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar rutinas','err'); }
+}
+function renderRutinas(data) {
+  const tbody = document.getElementById('rut-tbody');
+  document.getElementById('rut-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">🏋️</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(r => `<tr>
+    <td><strong>${r.idRutina}</strong></td><td>${r.nombreRutina}</td>
+    <td><div class="actions-cell"><button class="action-btn" onclick="editRutina(${r.idRutina})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('rutina',${r.idRutina})">🗑️ Eliminar</button></div></td>
+  </tr>`).join('');
+}
+async function saveRutina() {
+  const editing = document.getElementById('rut-id-editing').value;
+  const body = { idRutina:parseInt(document.getElementById('rut-id').value), nombreRutina:document.getElementById('rut-nombre').value };
+  if (!body.idRutina||!body.nombreRutina) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/rutinas/${editing}`:`${API}/api/rutinas`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-rutina'); await loadRutinas(); showToast(editing?'Rutina actualizada ✓':'Rutina creada ✓','ok');
+  } catch { showToast('Error al guardar la rutina','err'); }
+}
+async function editRutina(id) {
+  const r = allRutinas.find(x=>x.idRutina===id); if (!r) return;
+  document.getElementById('modal-rut-title').textContent = 'EDITAR RUTINA';
+  document.getElementById('rut-id-editing').value=id;
+  document.getElementById('rut-id').value=r.idRutina; document.getElementById('rut-id').disabled=true;
+  document.getElementById('rut-nombre').value=r.nombreRutina; document.getElementById('modal-rutina').classList.add('open');
+}
+
+// ── NIVELES ──────────────────────────────────────────────
+async function loadNiveles() {
+  try {
+    const r = await fetch(`${API}/api/niveles`); allNiveles = await r.json();
+    renderNiveles(allNiveles); document.getElementById('stat-total-niv').textContent=allNiveles.length;
+  } catch { document.getElementById('niv-tbody').innerHTML=`<tr class="loading-row"><td colspan="3">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar niveles','err'); }
+}
+function renderNiveles(data) {
+  const tbody = document.getElementById('niv-tbody');
+  document.getElementById('niv-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">📊</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(n => `<tr>
+    <td><strong>${n.idNivel}</strong></td><td>${n.nivel}</td>
+    <td><div class="actions-cell"><button class="action-btn" onclick="editNivel(${n.idNivel})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('nivel',${n.idNivel})">🗑️ Eliminar</button></div></td>
+  </tr>`).join('');
+}
+async function saveNivel() {
+  const editing = document.getElementById('niv-id-editing').value;
+  const body = { idNivel:parseInt(document.getElementById('niv-id').value), nivel:document.getElementById('niv-nivel').value };
+  if (!body.idNivel||!body.nivel) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/niveles/${editing}`:`${API}/api/niveles`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-nivel'); await loadNiveles(); showToast(editing?'Nivel actualizado ✓':'Nivel creado ✓','ok');
+  } catch { showToast('Error al guardar el nivel','err'); }
+}
+async function editNivel(id) {
+  const n = allNiveles.find(x=>x.idNivel===id); if (!n) return;
+  document.getElementById('modal-niv-title').textContent = 'EDITAR NIVEL';
+  document.getElementById('niv-id-editing').value=id;
+  document.getElementById('niv-id').value=n.idNivel; document.getElementById('niv-id').disabled=true;
+  document.getElementById('niv-nivel').value=n.nivel; document.getElementById('modal-nivel').classList.add('open');
+}
+
+// ── OBJETIVOS ────────────────────────────────────────────
+async function loadObjetivos() {
+  try {
+    const r = await fetch(`${API}/api/objetivos`); allObjetivos = await r.json();
+    renderObjetivos(allObjetivos); document.getElementById('stat-total-obj').textContent=allObjetivos.length;
+  } catch { document.getElementById('obj-tbody').innerHTML=`<tr class="loading-row"><td colspan="3">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar objetivos','err'); }
+}
+function renderObjetivos(data) {
+  const tbody = document.getElementById('obj-tbody');
+  document.getElementById('obj-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">🎯</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(o => `<tr>
+    <td><strong>${o.idObjetivo}</strong></td><td>${o.objetivo}</td>
+    <td><div class="actions-cell"><button class="action-btn" onclick="editObjetivo(${o.idObjetivo})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('objetivo',${o.idObjetivo})">🗑️ Eliminar</button></div></td>
+  </tr>`).join('');
+}
+async function saveObjetivo() {
+  const editing = document.getElementById('obj-id-editing').value;
+  const body = { idObjetivo:parseInt(document.getElementById('obj-id').value), objetivo:document.getElementById('obj-objetivo').value };
+  if (!body.idObjetivo||!body.objetivo) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/objetivos/${editing}`:`${API}/api/objetivos`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-objetivo'); await loadObjetivos(); showToast(editing?'Objetivo actualizado ✓':'Objetivo creado ✓','ok');
+  } catch { showToast('Error al guardar el objetivo','err'); }
+}
+async function editObjetivo(id) {
+  const o = allObjetivos.find(x=>x.idObjetivo===id); if (!o) return;
+  document.getElementById('modal-obj-title').textContent = 'EDITAR OBJETIVO';
+  document.getElementById('obj-id-editing').value=id;
+  document.getElementById('obj-id').value=o.idObjetivo; document.getElementById('obj-id').disabled=true;
+  document.getElementById('obj-objetivo').value=o.objetivo; document.getElementById('modal-objetivo').classList.add('open');
+}
+
+// ── PLAN RUTINA ──────────────────────────────────────────
+async function loadPlanes() {
+  try {
+    const r = await fetch(`${API}/api/planes-rutina`); allPlanes = await r.json();
+    renderPlanes(allPlanes); updatePlanStats(allPlanes);
+  } catch { document.getElementById('plan-tbody').innerHTML=`<tr class="loading-row"><td colspan="6">⚠️ No se pudo conectar a la API.</td></tr>`; showToast('Error al cargar planes','err'); }
+}
+function renderPlanes(data) {
+  const tbody = document.getElementById('plan-tbody');
+  document.getElementById('plan-count').textContent = data.length + ' registros';
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div><p>Sin resultados</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(p => `<tr>
+    <td><strong>${p.idPlan}</strong></td><td>${p.idRutina}</td><td>${p.idNivel}</td><td>${p.idObjetivo}</td><td>${p.duracionDias} días</td>
+    <td><div class="actions-cell"><button class="action-btn" onclick="editPlan(${p.idPlan})">✏️ Editar</button><button class="action-btn danger" onclick="askDelete('plan',${p.idPlan})">🗑️ Eliminar</button></div></td>
+  </tr>`).join('');
+}
+function updatePlanStats(data) {
+  document.getElementById('stat-total-plan').textContent = data.length;
+  const avg = data.length ? Math.round(data.reduce((s,p)=>s+p.duracionDias,0)/data.length) : 0;
+  document.getElementById('stat-dias-plan').textContent = avg + ' días';
+}
+async function savePlan() {
+  const editing = document.getElementById('plan-id-editing').value;
+  const body = { idPlan:parseInt(document.getElementById('plan-id').value), idRutina:parseInt(document.getElementById('plan-rutina').value), idNivel:parseInt(document.getElementById('plan-nivel').value), idObjetivo:parseInt(document.getElementById('plan-objetivo').value), duracionDias:parseInt(document.getElementById('plan-duracion').value) };
+  if (!body.idPlan||!body.idRutina||!body.idNivel||!body.idObjetivo||!body.duracionDias) { showToast('Completa todos los campos','err'); return; }
+  try {
+    const r = await fetch(editing?`${API}/api/planes-rutina/${editing}`:`${API}/api/planes-rutina`, { method:editing?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    closeModal('modal-plan'); await loadPlanes(); showToast(editing?'Plan actualizado ✓':'Plan creado ✓','ok');
+  } catch { showToast('Error al guardar el plan','err'); }
+}
+async function editPlan(id) {
+  const p = allPlanes.find(x=>x.idPlan===id); if (!p) return;
+  document.getElementById('modal-plan-title').textContent = 'EDITAR PLAN';
+  document.getElementById('plan-id-editing').value=id;
+  document.getElementById('plan-id').value=p.idPlan; document.getElementById('plan-id').disabled=true;
+  document.getElementById('plan-rutina').value=p.idRutina; document.getElementById('plan-nivel').value=p.idNivel;
+  document.getElementById('plan-objetivo').value=p.idObjetivo; document.getElementById('plan-duracion').value=p.duracionDias;
+  document.getElementById('modal-plan').classList.add('open');
+}
+
+// ── DELETE ───────────────────────────────────────────────
+function askDelete(type, id) { deleteTarget={type,id}; document.getElementById('confirm-overlay').classList.add('open'); }
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); deleteTarget={type:null,id:null}; }
+async function confirmDelete() {
+  const { type, id } = deleteTarget;
+  closeConfirm();
+
+  let url;
+  if (type === 'asignacion') {
+    const [idCliente, idEntrenador] = String(id).split('_');
+    url = `${API}/api/asignaciones/${idCliente}/${idEntrenador}`;
+  } else {
+    const urls = {
+      pago:       `${API}/api/pagos/${id}`,
+      asistencia: `${API}/api/asistencias/${id}`,
+      cliente:    `${API}/api/clientes/${id}`,
+      entrenador: `${API}/api/entrenadores/${id}`,
+      membresia:  `${API}/api/membresias/${id}`,
+      rutina:     `${API}/api/rutinas/${id}`,
+      nivel:      `${API}/api/niveles/${id}`,
+      objetivo:   `${API}/api/objetivos/${id}`,
+      plan:       `${API}/api/planes-rutina/${id}`,
+    };
+    url = urls[type];
+  }
+
+  // clientePlan uses composite key: id = "idCliente_idPlan"
+  if (type === 'clientePlan') {
+    const [idCliente, idPlan] = String(id).split('_');
+    url = `${API}/api/cliente-plan-rutina/cliente/${idCliente}/plan/${idPlan}`;
+  }
+
+  const reloaders = {
+    pago: loadPagos, asistencia: loadAsistencias, cliente: loadClientes,
+    entrenador: loadEntrenadores, asignacion: loadAsignaciones,
+    membresia: loadMembresias, rutina: loadRutinas, nivel: loadNiveles,
+    objetivo: loadObjetivos, plan: loadPlanes, clientePlan: loadClientePlanes
+  };
+
+  try {
+    const r = await fetch(url, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    if (reloaders[type]) await reloaders[type]();
+    showToast('Registro eliminado ✓','ok');
+  } catch { showToast('Error al eliminar','err'); }
+}
+
+// ── HELPERS ─────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '—'; const s=String(d);
+  if (s.includes('-')&&s.length===10) return s.split('-').reverse().join('/');
+  return s.slice(0,10).split('-').reverse().join('/');
+}
+function formatTime(dt) {
+  if (!dt) return '—'; const s=String(dt);
+  if (s.includes('T')) return s.slice(11,16);
+  if (s.includes(' ')) return s.split(' ')[1]?.slice(0,5)||'—';
+  return '—';
+}
+function formatDatetimeLocal(dt) {
+  if (!dt) return ''; const s=String(dt);
+  if (s.includes('T')) return s.slice(0,16);
+  if (s.includes(' ')) return s.replace(' ','T').slice(0,16);
+  return '';
+}
+function calcMinutos(entrada, salida) {
+  try { return Math.round((new Date(String(salida).replace(' ','T'))-new Date(String(entrada).replace(' ','T')))/60000); }
+  catch { return 0; }
+}
+function showToast(msg, type) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── CLIENTE - PLAN RUTINA ────────────────────────────────
+async function loadClientePlanes() {
+  try {
+    const r = await fetch(`${API}/api/cliente-plan-rutina`);
+    allClientePlanes = await r.json();
+    renderClientePlanes(allClientePlanes);
+    document.getElementById('stat-total-cpr').textContent = allClientePlanes.length;
+    const unicos = new Set(allClientePlanes.map(x => x.idCliente ?? x.id?.idCliente)).size;
+    document.getElementById('stat-clientes-cpr').textContent = unicos;
+  } catch { document.getElementById('cpr-tbody').innerHTML = '<tr><td colspan="3">Error al cargar</td></tr>'; }
+}
+function renderClientePlanes(data) {
+  const tbody = document.getElementById('cpr-tbody');
+  document.getElementById('cpr-count').textContent = `${data.length} registro(s)`;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="3">Sin registros</td></tr>'; return; }
+  tbody.innerHTML = data.map(x => {
+    const idC = x.idCliente ?? x.id?.idCliente;
+    const idP = x.idPlan    ?? x.id?.idPlan;
+    return `<tr>
+      <td><strong>${idC}</strong></td>
+      <td>${idP}</td>
+      <td><div class="actions-cell">
+        <button class="action-btn danger" onclick="askDelete('clientePlan','${idC}_${idP}')">🗑️ Eliminar</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+async function saveClientePlan() {
+  const idCliente = parseInt(document.getElementById('cpr-cliente').value);
+  const idPlan    = parseInt(document.getElementById('cpr-plan').value);
+  if (!idCliente || !idPlan) { showToast('Completa ambos campos','err'); return; }
+  try {
+    const r = await fetch(`${API}/api/cliente-plan-rutina`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({idCliente, idPlan})
+    });
+    if (!r.ok) throw new Error();
+    closeModal('modal-cpr');
+    await loadClientePlanes();
+    showToast('Asignación creada ✓','ok');
+  } catch { showToast('Error al guardar (¿ya existe?)','err'); }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+loadPagos();
+</script>
+</body>
+</html>
