@@ -63,17 +63,21 @@ public class GymRoutes extends RouteBuilder {
             .end();
 
         from("direct:bienvenidaHombre")
-            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Hombre");
-
+            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Hombre")
+            .marshal().json()
+            .to("rabbitmq://localhost:5672/gym.clientes?username=guest&password=guest&routingKey=cliente.hombre&autoDelete=false&queue=cliente.hombre");
         from("direct:bienvenidaMujer")
-            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Mujer");
-
+            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Mujer")
+            .marshal().json()
+            .to("rabbitmq://localhost:5672/gym.clientes?username=guest&password=guest&routingKey=cliente.mujer&autoDelete=false&queue=cliente.mujer");
         from("direct:bienvenidaGeneral")
-            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Sin genero definido");
+            .log("${body.idCliente} — ${body.nombre} ${body.apellido} | Sin genero definido")
+            .marshal().json()
+            .to("rabbitmq://localhost:5672/gym.clientes?username=guest&password=guest&routingKey=cliente.general&autoDelete=false&queue=cliente.general");
 
-        // RUTA 2: VERIFICACION DE PAGOS 
+        // RUTA 2: VERIFICACIÓN DE PAGOS POR MÉTODO DE PAGO
         // Se activa cada 15 segundos, revisa todos los pagos
-        // y los enruta segun su metodo: EFECTIVO, TARJETA, TRANSFERENCIA
+        // y los enruta según su método: EFECTIVO, TARJETA, TRANSFERENCIA
 
         from("timer:verificarPagos?period=15000")
             .process(new Processor() {
@@ -107,12 +111,13 @@ public class GymRoutes extends RouteBuilder {
             .end();
 
         from("direct:pagoEfectivo")
-            .log("Pago ID ${body.idPago} — EFECTIVO     | Cliente: ${body.idCliente}");
-
+            .log("Pago ID ${body.idPago} — EFECTIVO     | Cliente: ${body.idCliente}")
+            .to("rabbitmq://localhost:5672/gym.pagos?username=guest&password=guest&routingKey=pago.efectivo&autoDelete=false&queue=pago.efectivo");
         from("direct:pagoTarjeta")
-            .log("Pago ID ${body.idPago} — TARJETA      | Cliente: ${body.idCliente}");
-
+            .log("Pago ID ${body.idPago} — TARJETA      | Cliente: ${body.idCliente}")
+            .to("rabbitmq://localhost:5672/gym.pagos?username=guest&password=guest&routingKey=pago.tarjeta&autoDelete=false&queue=pago.tarjeta");
         from("direct:pagoTransferencia")
-            .log("Pago ID ${body.idPago} — TRANSFERENCIA | Cliente: ${body.idCliente}");
+            .log("Pago ID ${body.idPago} — TRANSFERENCIA | Cliente: ${body.idCliente}")
+            .to("rabbitmq://localhost:5672/gym.pagos?username=guest&password=guest&routingKey=pago.transferencia&autoDelete=false&queue=pago.transferencia");
     }
 }

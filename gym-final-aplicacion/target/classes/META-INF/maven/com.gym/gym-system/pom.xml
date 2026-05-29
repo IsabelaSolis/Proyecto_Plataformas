@@ -34,6 +34,22 @@
     		 <artifactId>camel-file-starter</artifactId>
     		 <version>4.6.0</version>
 		</dependency>
+		<dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+    		<artifactId>camel-rabbitmq-starter</artifactId>
+    		<version>3.21.0</version>
+		</dependency>
+		
+		<dependency>
+             <groupId>org.apache.camel.springboot</groupId>
+    		 <artifactId>camel-jackson-starter</artifactId>
+             <version>4.6.0</version>
+        </dependency>
+
+		<dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
