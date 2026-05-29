@@ -59,8 +59,14 @@ public class ClienteService {
     public Cliente save(Cliente cliente) {
         if (repo.findByCorreo(cliente.getCorreo()) != null)
             throw new RuntimeException("Ya existe un cliente con ese correo");
+ 
+        
+        if (repo.existsById(cliente.getIdCliente()))
+            throw new RuntimeException("Ya existe un cliente con ese id");
         return repo.save(cliente);
     }
+    
+  
 
     public Cliente update(Long id, Cliente datos) {
         Cliente e = repo.findById(id)
